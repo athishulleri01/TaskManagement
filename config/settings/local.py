@@ -22,3 +22,24 @@ SECRET_KEY = getenv("DJNAGO_SECRET_KEY","NSdeDnb1QeYD2aMEaURpC2JJgg5wOPX6SQdVoNX
 ALLOWED_HOSTS = ["localhost","127.0.0.1","0.0.0.0"]
 
 ADMIN_URL = getenv("DJANGO_ADMIN_URL")
+
+
+#Logg config
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "%(levelname)s %(name)-12s %(asctime)s %(module)s %(process)d %(thread)d %(message)s"
+        }
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        }
+    },
+    "root": {"level": "INFO", "handlers": ["console"]},
+}
