@@ -193,5 +193,5 @@ def update_admin_role(request, user_id):
 
 
 def list_admin_all_users(request):
-    users = User.objects.filter(role="admin")
+    users = User.objects.filter(role="user")
     return render(request, 'adminside/users/users_details_for_admin.html', {'users': users})
