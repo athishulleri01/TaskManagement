@@ -1,5 +1,6 @@
 
 from datetime import timedelta
+import os
 from pathlib import Path
 from os import getenv, path
 
@@ -36,6 +37,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "core_apps.users",
     "core_apps.tasks",
+    "core_apps.dashboard",          
     "core_apps.common",
 ]
 
@@ -57,7 +59,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [str(APPS_DIR / "templates")],
+        'DIRS': [str(BASE_DIR / "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -128,7 +130,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATIC_ROOT = str(BASE_DIR/ "staticfiles")
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'assets')
+
+# STATIC_ROOT = str(BASE_DIR/ "staticfiles")
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

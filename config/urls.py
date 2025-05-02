@@ -29,6 +29,7 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls), 
     path("api/v1/auth/", include("djoser.urls")),
     path("api/v1/auth/", include("core_apps.users.urls")),
+    path("api/v1/admin/", include("core_apps.dashboard.urls")),
 
 ]
 
