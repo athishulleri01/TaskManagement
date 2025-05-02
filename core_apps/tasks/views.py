@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -6,6 +6,7 @@ from .models import Task
 from .serializers import TaskSerializer, TaskStatusUpdateSerializer
 from django.contrib.auth.decorators import login_required
 from core_apps.users.models import User
+from django.http import HttpResponseForbidden
 
 class UserTaskListAPIView(generics.ListAPIView):
     serializer_class = TaskSerializer
@@ -28,7 +29,7 @@ class TaskStatusUpdateAPIView(generics.UpdateAPIView):
 
 
 class TaskReportAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk):
         try:
@@ -68,9 +69,44 @@ def create_task_view(request):
 
 @login_required
 def task_list_view(request):
-    if request.user.role == 'user':
-        tasks = Task.objects.filter(assigned_to=request.user)
-    else:
-        tasks = Task.objects.all()
-        users = User.objects.filter(role="user")
+    tasks = Task.objects.all()
+    users = User.objects.filter(role="user")
     return render(request, 'adminside/tasks/list_tasks.html', {'tasks': tasks, 'users' :users})
+
+@login_required
+def task_list_view_superuser(request):
+    tasks = Task.objects.all()
+    users = User.objects.filter(role="user")
+    return render(request, 'adminside/tasks/list_tasks_superuser.html', {'tasks': tasks, 'users' :users})
+
+
+@login_required
+def edit_task_view(request, id):
+    task = get_object_or_404(Task, id=id) 
+
+    if request.method == 'POST':
+        task.title = request.POST['title']
+        task.description = request.POST['description']
+        task.assigned_to_id = get_object_or_404(User, pk=request.POST['assigned_to'])
+        task.due_date = request.POST['due_date']
+        task.status = request.POST['status']
+        task.save()
+        return redirect('task_list') 
+
+    users = User.objects.filter(role='user')
+    return render(request, 'adminside/tasks/edit_task.html', {'task': task, 'users': users})
+
+
+
+@login_required
+def task_report_view(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+
+    # Only superadmins or admins can view reports
+    if request.user.role not in ['admin', 'superadmin']:
+        return HttpResponseForbidden("You don't have permission to view this report.")
+
+    if task.status != 'completed':
+        return HttpResponseForbidden("Report is only available for completed tasks.")
+
+    return render(request, 'adminside/tasks/task_report.html', {'task': task})
