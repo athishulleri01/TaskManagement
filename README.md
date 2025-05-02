@@ -143,8 +143,7 @@ python manage.py createsuperuser
             "updated_at": "2025-05-02T13:14:12.350765Z",
             "assigned_to": 35
         },
-        ....
-        ....
+       
     ]
 }
 ```
