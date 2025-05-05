@@ -20,6 +20,7 @@ def get_tokens_for_user(user):
         'access': str(refresh.access_token),
     }
     
+    
 @never_cache
 @login_required(login_url='admin_login')
 def DashBoard(request):
@@ -28,6 +29,7 @@ def DashBoard(request):
     if request.user.role == "superadmin":
         return render(request, 'adminside/dashboard/superadmin_index.html', {'user': request.user})
     return render(request, 'adminside/dashboard/admin_index.html', {'user': request.user})
+    
     
 
 @never_cache
@@ -60,6 +62,7 @@ def admin_login_view(request):
     return render(request, 'adminside/admin_login.html')
 
 
+ # Superuser register a new user
 @csrf_exempt
 def register_user(request):
     if request.method == 'POST':
@@ -96,6 +99,8 @@ def register_user(request):
 
     return JsonResponse({'error': 'Only POST method allowed'}, status=405)
 
+
+# logout 
 def logout_view(request):
     logout(request)
     response = redirect('admin_login')
@@ -103,12 +108,14 @@ def logout_view(request):
     response.delete_cookie('refresh_token')
     return response
 
+
+# superAmin view the user details
 def list_admin_users(request):
     admin_users = User.objects.filter(role="admin")
     return render(request, 'adminside/users/admin_details.html', {'users': admin_users})
 
 
-
+# superadmin can block user
 def UserBlock(request, user_id):
     user = User.objects.get(id=user_id)
     if user.is_active:
@@ -134,29 +141,36 @@ def UserBlock(request, user_id):
             return render(request, 'adminside/users/admin_details.html', context)
         elif user.role == "user":
             return render(request, 'adminside/users/users_details.html', context)
-    
+ 
+ 
+#  admin dashboard 
 def admin_dashboard(request):
     return render(request, 'adminside/dashboard/admin_index.html', {'user': request.user})
 
+
+# superAmin view the user details
 def list_users(request):
     users = User.objects.filter(role="user")
     return render(request, 'adminside/users/users_details.html', {'users': users})
 
 
+# verifyng the superuser
 def is_superadmin(user):
     return user.is_authenticated and user.role == 'superadmin'
 
+
+# superuser delete admin
 @login_required
 @user_passes_test(is_superadmin)
 def delete_admin(request, user_id):
     admin_user = get_object_or_404(User, id=user_id, role='admin')
-    
     if admin_user:
         admin_user.delete()
-        
-
+    
     return redirect('admin_details') 
 
+
+# superuser delete user
 @login_required
 @user_passes_test(is_superadmin)
 def delete_user(request, user_id):
@@ -168,6 +182,8 @@ def delete_user(request, user_id):
 
     return redirect('user_details') 
 
+
+# superuser can update user role
 @require_POST
 def update_user_role(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -179,6 +195,8 @@ def update_user_role(request, user_id):
     
     return redirect('user_details') 
 
+
+# superuser can update admin role
 @require_POST
 def update_admin_role(request, user_id):
     user = get_object_or_404(User, id=user_id)

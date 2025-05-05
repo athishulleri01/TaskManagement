@@ -8,29 +8,11 @@ from django.contrib.auth.decorators import login_required
 from core_apps.users.models import User
 from django.http import HttpResponseForbidden
 
-class UserTaskListAPIView(generics.ListAPIView):
-    serializer_class = TaskSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Task.objects.filter(assigned_to=self.request.user)
 
 
-class TaskStatusUpdateAPIView(generics.UpdateAPIView):
-    queryset = Task.objects.all()
-    serializer_class = TaskStatusUpdateSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Task.objects.filter(assigned_to=self.request.user)
-
-    def perform_update(self, serializer):
-        serializer.save()
-
-
+# superuser can view task report and working hours
 class TaskReportAPIView(APIView):
     # permission_classes = [permissions.IsAuthenticated]
-
     def get(self, request, pk):
         try:
             task = Task.objects.get(pk=pk)
@@ -50,7 +32,7 @@ class TaskReportAPIView(APIView):
 
 
 
-
+# admin can create task
 @login_required
 def create_task_view(request):
     if request.method == 'POST' and request.user.role in ['admin', 'superadmin']:
@@ -67,19 +49,43 @@ def create_task_view(request):
     users = User.objects.filter(role='user')
     return render(request, 'adminside/tasks/task_page.html', {'users': users})
 
+
+# admin can view all tasks
 @login_required
 def task_list_view(request):
     tasks = Task.objects.all()
     users = User.objects.filter(role="user")
     return render(request, 'adminside/tasks/list_tasks.html', {'tasks': tasks, 'users' :users})
 
+
+# superuser can view all tasks
 @login_required
 def task_list_view_superuser(request):
     tasks = Task.objects.all()
     users = User.objects.filter(role="user")
     return render(request, 'adminside/tasks/list_tasks_superuser.html', {'tasks': tasks, 'users' :users})
 
+# asigned user can list their task 
+class UserTaskListAPIView(generics.ListAPIView):
+    serializer_class = TaskSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        return Task.objects.filter(assigned_to=self.request.user)
+
+
+class TaskStatusUpdateAPIView(generics.UpdateAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskStatusUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Task.objects.filter(assigned_to=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save()
+        
+        
 @login_required
 def edit_task_view(request, id):
     task = get_object_or_404(Task, id=id) 
